@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply text-gray-900 antialiased;
+  }
+
+  * {
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  }
+
+  button:focus {
+    @apply focus:ring-offset-0;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-200 hover:shadow-xl hover:scale-[1.02] cursor-pointer;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 hover:shadow-lg transform hover:scale-[1.02] focus:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
+  }
+
+  .btn-secondary {
+    @apply bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 hover:shadow-lg transform hover:scale-[1.02] focus:scale-[1.02];
+  }
+
+  .alert {
+    @apply p-3 sm:p-4 rounded-lg border-l-4;
+  }
+
+  .alert-info {
+    @apply alert bg-blue-50 border-blue-500 text-blue-800;
+  }
+
+  .alert-warning {
+    @apply alert bg-yellow-50 border-yellow-500 text-yellow-800;
+  }
+
+  .alert-danger {
+    @apply alert bg-red-50 border-red-500 text-red-800;
+  }
+
+  .metric-card {
+    @apply flex justify-between items-center p-3 sm:p-4 rounded-lg border-l-4;
+  }
+
+  .loading-spinner {
+    @apply inline-block w-6 h-6 border-2 border-current border-r-transparent rounded-full animate-spin;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent;
+  }
+
+  .bg-pattern {
+    background-image: 
+      radial-gradient(circle at 25px 25px, rgba(255,255,255,0.2) 2px, transparent 0),
+      radial-gradient(circle at 75px 75px, rgba(255,255,255,0.1) 2px, transparent 0);
+    background-size: 100px 100px;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .glass {
+    @apply bg-white/20 backdrop-blur-lg border border-white/30;
+  }
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-lg;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-lg hover:bg-gray-400;
+}
+
+/* Animation for mobile touches */
+@media (hover: none) and (pointer: coarse) {
+  .card-hover:active {
+    @apply scale-95;
+  }
+  
+  .btn-primary:active,
+  .btn-secondary:active {
+    @apply scale-95;
+  }
+}
+
+/* Ensure text remains readable on small screens */
+@media (max-width: 640px) {
+  .text-5xl { @apply text-3xl; }
+  .text-4xl { @apply text-2xl; }
+  .text-3xl { @apply text-xl; }
+  .text-2xl { @apply text-lg; }
+}

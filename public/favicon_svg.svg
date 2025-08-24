@@ -1,0 +1,18 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" rx="6" fill="#2563eb"/>
+  <g transform="translate(4, 4)">
+    <!-- Satellite body -->
+    <rect x="8" y="10" width="8" height="6" rx="1" fill="#ffffff"/>
+    <!-- Solar panels -->
+    <rect x="4" y="11" width="3" height="4" rx="0.5" fill="#60a5fa"/>
+    <rect x="17" y="11" width="3" height="4" rx="0.5" fill="#60a5fa"/>
+    <!-- Antenna -->
+    <circle cx="12" cy="8" r="1" fill="#ffffff"/>
+    <line x1="12" y1="8" x2="12" y2="5" stroke="#ffffff" stroke-width="0.5"/>
+    <!-- Signal waves -->
+    <path d="M10 18 Q12 20 14 18" stroke="#10b981" stroke-width="1" fill="none"/>
+    <path d="M9 20 Q12 22 15 20" stroke="#10b981" stroke-width="1" fill="none"/>
+    <!-- Earth curve -->
+    <path d="M2 24 Q12 28 22 24" stroke="#10b981" stroke-width="2" fill="none"/>
+  </g>
+</svg>
