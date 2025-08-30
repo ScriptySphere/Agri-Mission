@@ -1,13 +1,27 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Satellite, Loader2, AlertTriangle, Thermometer, CloudRain, Sun, Leaf } from 'lucide-react';
-import LoadingScreen from './components/LoadingScreen';
-import CountrySelect from './components/CountrySelect';
-import CropSelect from './components/CropSelect';
-import Results from './components/Results';
-import { worldCountries, crops, fetchNASAData, generateAlerts, getClimateType } from './utils/gameData';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Satellite,
+  Loader2,
+  AlertTriangle,
+  Thermometer,
+  CloudRain,
+  Sun,
+  Leaf,
+} from "lucide-react";
+import LoadingScreen from "./components/LoadingScreen";
+import CountrySelect from "./components/CountrySelect";
+import CropSelect from "./components/CropSelect";
+import Results from "./components/Results";
+import {
+  worldCountries,
+  crops,
+  fetchNASAData,
+  generateAlerts,
+  getClimateType,
+} from "./utils/gameData";
 
 const NASAFarmNavigators = () => {
-  const [gameState, setGameState] = useState('loading');
+  const [gameState, setGameState] = useState("loading");
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedCrop, setSelectedCrop] = useState(null);
@@ -23,11 +37,11 @@ const NASAFarmNavigators = () => {
   const loadCountryData = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const batchSize = 8; // Reduced batch size for better mobile performance
       const countriesWithData = [];
-      
+
       for (let i = 0; i < worldCountries.length; i += batchSize) {
         const batch = worldCountries.slice(i, i + batchSize);
         const batchPromises = batch.map(async (country) => {
@@ -36,7 +50,10 @@ const NASAFarmNavigators = () => {
             return {
               ...country,
               ...nasaData,
-              climate: getClimateType(nasaData.temperature, nasaData.precipitation)
+              climate: getClimateType(
+                nasaData.temperature,
+                nasaData.precipitation
+              ),
             };
           } catch (error) {
             console.warn(`Failed to load data for ${country.name}:`, error);
@@ -47,41 +64,45 @@ const NASAFarmNavigators = () => {
               precipitation: 300 + Math.random() * 1000,
               solar: 150 + Math.random() * 100,
               ndvi: 0.3 + Math.random() * 0.5,
-              climate: 'Variable 🌍'
+              climate: "Variable 🌍",
             };
           }
         });
-        
+
         const batchResults = await Promise.all(batchPromises);
         countriesWithData.push(...batchResults);
-        
+
         // Add delay between batches
         if (i + batchSize < worldCountries.length) {
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise((resolve) => setTimeout(resolve, 200));
         }
       }
-      
+
       setCountries(countriesWithData);
-      setGameState('country-select');
+      setGameState("country-select");
     } catch (error) {
-      console.error('Error loading country data:', error);
-      setError('Failed to load NASA data. Please check your connection and try again.');
+      console.error("Error loading country data:", error);
+      setError(
+        "Failed to load NASA data. Please check your connection and try again."
+      );
     } finally {
       setLoading(false);
     }
   }, []);
 
   const calculateResults = useCallback(() => {
-    const country = countries.find(c => c.code === selectedCountry);
-    const crop = crops.find(c => c.id === selectedCrop);
-    
+    const country = countries.find((c) => c.code === selectedCountry);
+    const crop = crops.find((c) => c.id === selectedCrop);
+
     let yieldScore = 100;
     let waterUsage = crop.waterNeed;
     let soilHealth = 100;
     let sustainabilityScore = 100;
-    
+
     // Temperature suitability
-    const tempOptimal = crop.optimalTemp[0] <= country.temperature && country.temperature <= crop.optimalTemp[1];
+    const tempOptimal =
+      crop.optimalTemp[0] <= country.temperature &&
+      country.temperature <= crop.optimalTemp[1];
     if (!tempOptimal) {
       const tempDeviation = Math.min(
         Math.abs(country.temperature - crop.optimalTemp[0]),
@@ -89,7 +110,7 @@ const NASAFarmNavigators = () => {
       );
       yieldScore -= tempDeviation * 2;
     }
-    
+
     // Water availability
     const waterStress = country.precipitation < crop.waterNeed;
     if (waterStress && !irrigation) {
@@ -97,7 +118,7 @@ const NASAFarmNavigators = () => {
       yieldScore *= waterRatio;
       sustainabilityScore -= 25;
     }
-    
+
     // Irrigation effects
     if (irrigation) {
       if (waterStress) {
@@ -108,11 +129,11 @@ const NASAFarmNavigators = () => {
       }
       waterUsage += 200;
     }
-    
+
     // Fertilizer effects
     if (fertilizer) {
       yieldScore += 15;
-      if (selectedCrop === 'soybeans') {
+      if (selectedCrop === "soybeans") {
         sustainabilityScore -= 30;
         soilHealth -= 15;
       } else {
@@ -120,23 +141,26 @@ const NASAFarmNavigators = () => {
         soilHealth -= 10;
       }
     }
-    
+
     // Environmental bonuses
     const ndviBonus = country.ndvi * 30;
     yieldScore += ndviBonus;
     soilHealth += ndviBonus;
-    
+
     if (country.solar > 200) {
       yieldScore += 15;
-      if (selectedCrop === 'sorghum') yieldScore += 10;
+      if (selectedCrop === "sorghum") yieldScore += 10;
     }
-    
+
     // Clamp values
     yieldScore = Math.max(10, Math.min(200, Math.round(yieldScore)));
     waterUsage = Math.max(100, Math.round(waterUsage));
     soilHealth = Math.max(10, Math.min(100, Math.round(soilHealth)));
-    sustainabilityScore = Math.max(0, Math.min(100, Math.round(sustainabilityScore)));
-    
+    sustainabilityScore = Math.max(
+      0,
+      Math.min(100, Math.round(sustainabilityScore))
+    );
+
     return {
       yield: yieldScore,
       waterUsage,
@@ -145,19 +169,39 @@ const NASAFarmNavigators = () => {
       tempOptimal,
       waterStress,
       country,
-      crop
+      crop,
     };
   }, [countries, selectedCountry, selectedCrop, irrigation, fertilizer]);
 
   const generateFactCard = useCallback((results) => {
     const facts = [
-      `NASA satellite data shows ${results.country.name} receives ${results.country.precipitation}mm of rain annually - that's ${results.country.precipitation > 1000 ? 'quite wet' : 'relatively dry'}!`,
-      `The average temperature in ${results.country.name} is ${results.country.temperature}°C, making it ${results.country.temperature > 25 ? 'a warm' : results.country.temperature > 15 ? 'a temperate' : 'a cool'} farming region.`,
+      `NASA satellite data shows ${results.country.name} receives ${
+        results.country.precipitation
+      }mm of rain annually - that's ${
+        results.country.precipitation > 1000 ? "quite wet" : "relatively dry"
+      }!`,
+      `The average temperature in ${results.country.name} is ${
+        results.country.temperature
+      }°C, making it ${
+        results.country.temperature > 25
+          ? "a warm"
+          : results.country.temperature > 15
+          ? "a temperate"
+          : "a cool"
+      } farming region.`,
       `Solar energy readings of ${results.country.solar} W/m² help plants photosynthesize and grow in ${results.country.name}.`,
-      `The vegetation health index (NDVI) of ${results.country.ndvi} indicates ${results.country.ndvi > 0.6 ? 'excellent' : results.country.ndvi > 0.4 ? 'good' : 'moderate'} growing conditions.`,
-      `${results.country.name}'s ${results.country.climate} climate creates unique farming opportunities and challenges.`
+      `The vegetation health index (NDVI) of ${
+        results.country.ndvi
+      } indicates ${
+        results.country.ndvi > 0.6
+          ? "excellent"
+          : results.country.ndvi > 0.4
+          ? "good"
+          : "moderate"
+      } growing conditions.`,
+      `${results.country.name}'s ${results.country.climate} climate creates unique farming opportunities and challenges.`,
     ];
-    
+
     return facts[Math.floor(Math.random() * facts.length)];
   }, []);
 
@@ -165,16 +209,16 @@ const NASAFarmNavigators = () => {
     const results = calculateResults();
     const factCard = generateFactCard(results);
     const countryAlerts = generateAlerts(results.country);
-    
+
     setLastResults({ ...results, factCard });
-    setTotalScore(prev => prev + results.sustainabilityScore);
+    setTotalScore((prev) => prev + results.sustainabilityScore);
     setAlerts(countryAlerts);
-    setGameState('results');
+    setGameState("results");
   }, [calculateResults, generateFactCard]);
 
   const nextSeason = useCallback(() => {
-    setSeason(prev => prev + 1);
-    setGameState('crop-select');
+    setSeason((prev) => prev + 1);
+    setGameState("crop-select");
     setSelectedCrop(null);
     setIrrigation(false);
     setFertilizer(false);
@@ -182,7 +226,7 @@ const NASAFarmNavigators = () => {
   }, []);
 
   const resetGame = useCallback(() => {
-    setGameState('country-select');
+    setGameState("country-select");
     setSelectedCountry(null);
     setSelectedCrop(null);
     setIrrigation(false);
@@ -195,34 +239,37 @@ const NASAFarmNavigators = () => {
 
   const selectCountry = useCallback((countryCode) => {
     setSelectedCountry(countryCode);
-    setGameState('crop-select');
+    setGameState("crop-select");
   }, []);
 
   useEffect(() => {
-    if (gameState === 'loading') {
+    if (gameState === "loading") {
       loadCountryData();
     }
   }, [gameState, loadCountryData]);
 
   // Loading state
-  if (gameState === 'loading') {
-    return <LoadingScreen loading={loading} error={error} onRetry={() => setGameState('loading')} />;
-  }
-
-  // Country selection
-  if (gameState === 'country-select') {
+  if (gameState === "loading") {
     return (
-      <CountrySelect 
-        countries={countries}
-        onSelectCountry={selectCountry}
+      <LoadingScreen
+        loading={loading}
+        error={error}
+        onRetry={() => setGameState("loading")}
       />
     );
   }
 
+  // Country selection
+  if (gameState === "country-select") {
+    return (
+      <CountrySelect countries={countries} onSelectCountry={selectCountry} />
+    );
+  }
+
   // Crop selection
-  if (gameState === 'crop-select') {
-    const country = countries.find(c => c.code === selectedCountry);
-    
+  if (gameState === "crop-select") {
+    const country = countries.find((c) => c.code === selectedCountry);
+
     return (
       <CropSelect
         country={country}
@@ -241,7 +288,7 @@ const NASAFarmNavigators = () => {
   }
 
   // Results screen
-  if (gameState === 'results') {
+  if (gameState === "results") {
     return (
       <Results
         results={lastResults}
@@ -267,13 +314,10 @@ const NASAFarmNavigators = () => {
         <p className="text-lg sm:text-xl text-gray-600 mb-6">
           Real-time farming simulation with live NASA Earth data
         </p>
-        <p className="text-gray-500 mb-8 text-sm">
-          Game State: {gameState}
-        </p>
-        <button 
-          onClick={() => setGameState('loading')}
-          className="btn-primary w-full text-base sm:text-lg"
-        >
+        <p className="text-gray-500 mb-8 text-sm">Game State: {gameState}</p>
+        <button
+          onClick={() => setGameState("loading")}
+          className="btn-primary w-full text-base sm:text-lg">
           <Leaf className="w-5 h-5 inline mr-2" />
           Start Your Farm
         </button>
